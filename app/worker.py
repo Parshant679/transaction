@@ -23,25 +23,14 @@ celery_app.conf.update(
 mongo_client = None
 transactions_collection = None
 
-@worker_process_init.connect
-def init_worker(**kwargs):
-    global mongo_client, transactions_collection
 
-    mongo_client = MongoClient(
+mongo_client = MongoClient(
         settings.mongo_uri,
         maxPoolSize=10,  
         minPoolSize=2,   
     )
-    transactions_collection = mongo_client[settings.db_name]["transactions"]
+transactions_collection = mongo_client[settings.db_name]["transactions"]
  
-
-
-@worker_process_shutdown.connect
-def shutdown_worker(**kwargs):
-    global mongo_client
-    if mongo_client:
-        mongo_client.close()
-
 
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=10)
 def process_transaction_task(self, transaction_id:str):
