@@ -26,7 +26,7 @@ async def receive_transaction_webhook(payload: TransactionRequest):
 
     try:
         await collection.insert_one(transaction_doc)
-        process_transaction_task.delay(transaction_doc)
+        process_transaction_task.delay(transaction_id=payload.transaction_id)
         print(f"Queued task for transaction {payload.transaction_id}")
 
     except DuplicateKeyError:

@@ -1,0 +1,30 @@
+
+services:
+
+  api:
+    build: .
+    container_name: webhook-api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    volumes:
+      - ./app:/app/app  
+
+  worker:
+    build: .
+    container_name: webhook-celery-worker
+    command: celery -A app.worker.celery_app worker --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: webhook-redis
+    ports:
+      - "6379:6379"

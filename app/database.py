@@ -1,18 +1,21 @@
 from pymongo import AsyncMongoClient
 from pymongo.asynchronous.collection import AsyncCollection
-from pydantic_settings import BaseSettings
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-class Settings(BaseSettings):
-    mongo_uri:str
-    db_name : str = "webhook"
-    redis_url : str
-    class Config:
-        env_file = ".env"
+class Settings:
+    def __init__(self):
+       self.mongo_uri  = os.getenv("MONGO_URI")
+       self.db_name  = os.getenv("DB_NAME")
+       self.redis_url  = os.getenv("REDIS_URL")
+       print(self.mongo_uri,self.db_name,self.redis_url)
 
 settings = Settings()
 
 class Database:
-    client : AsyncMongoClient  = None
+    def __init__(self):
+     self.client : AsyncMongoClient  = None
 
 db = Database()
 
@@ -22,13 +25,13 @@ async def connect_db():
         maxPoolSize=10,
         minPoolSize=2
     )
-    
     collection = db.client[settings.db_name]["transactions"]
     await collection.create_index("transaction_id",unique=True)
 
-async def close_db_connection():
+async def close_db():
     if db.client:
         await db.client.close()
 
 def get_collection(name: str):
-    return db.client[settings.db_name][name]
+    collection = db.client[settings.db_name][name]
+    return collection

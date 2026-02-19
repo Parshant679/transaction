@@ -22,7 +22,7 @@ class TransactionResponse(BaseModel):
 
 class WebhookAckResponse(BaseModel):
       message:str
-      transactoin_id:str
+      transaction_id:str
 
 class ServiceHealthCheckResponse(BaseModel):
     status:str

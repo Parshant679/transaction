@@ -5,6 +5,7 @@ from pymongo import MongoClient
 from datetime import datetime, timezone
 from app.database import settings
 
+
 celery_app = Celery(
     "webhook_worker",
     broker=settings.redis_url,
@@ -27,7 +28,7 @@ def init_worker(**kwargs):
     global mongo_client, transactions_collection
 
     mongo_client = MongoClient(
-        settings.mongodb_uri,
+        settings.mongo_uri,
         maxPoolSize=10,  
         minPoolSize=2,   
     )
@@ -43,9 +44,8 @@ def shutdown_worker(**kwargs):
 
 
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=10)
-def process_transaction_task(self, transaction_data: dict):
-    transaction_id = transaction_data["transaction_id"]
-
+def process_transaction_task(self, transaction_id:str):
+    
     try:
         existing = transactions_collection.find_one({"transaction_id": transaction_id})
 
