@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from app.database import connect_db, close_db
 from app.models import HealthResponse
-from app.routers.webhooks import router as webhook_router
+from app.router.webhook import router as webhook_router
 
 app = FastAPI(
     title="Transaction Webhook Service",
@@ -12,7 +12,7 @@ app = FastAPI(
 )
 
 
-# --- Lifecycle Events ---
+# server lifecycle events 
 
 @app.on_event("startup")
 async def startup():
@@ -23,9 +23,6 @@ async def startup():
 async def shutdown():
     await close_db()
 
-
-# --- Health Check ---
-
 @app.get("/", response_model=HealthResponse)
 async def health_check():
     return HealthResponse(
@@ -33,7 +30,6 @@ async def health_check():
         current_time=datetime.now(timezone.utc),
     )
 
-
-# --- Routers ---
+# Routers
 
 app.include_router(webhook_router, prefix="/v1")
