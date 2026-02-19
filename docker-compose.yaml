@@ -17,7 +17,7 @@ services:
   worker:
     build: .
     container_name: webhook-celery-worker
-    command: celery -A app.worker.celery_app worker --loglevel=info
+    command: celery -A app.worker.celery_app worker --loglevel=info --concurrency=2 --pool=threads
     env_file:
       - .env
     depends_on:
