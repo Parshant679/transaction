@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: webhook-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MONGO_URI
+        sync: false        # you'll paste this manually in Render dashboard
+      - key: DB_NAME
+        value: webhook
+      - key: REDIS_URL
+        fromService:
+          name: webhook-redis
+          type: redis
+          property: connectionString
+
+  - type: worker
+    name: webhook-celery-worker
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A app.worker.celery_app worker --loglevel=info
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: DB_NAME
+        value: webhook
+      - key: REDIS_URL
+        fromService:
+          name: webhook-redis
+          type: redis
+          property: connectionString
+
+  - type: redis
+    name: webhook-redis
+    plan: free
+    ipAllowList: []

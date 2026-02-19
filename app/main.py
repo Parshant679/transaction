@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from datetime import datetime, timezone
 
@@ -10,17 +11,13 @@ app = FastAPI(
     description="Receives payment processor webhooks and processes transactions reliably in the background.",
     version="1.0.0",
 )
-
-
 # server lifecycle events 
-
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # --- Startup ---
     await connect_db()
-
-
-@app.on_event("shutdown")
-async def shutdown():
+    yield
+    # --- Shutdown ---
     await close_db()
 
 @app.get("/", response_model=HealthResponse)
